@@ -20,7 +20,6 @@ const MonthSelector = ({ month, year, onChange }) => {
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // Don't allow going beyond current month
     if (year > currentYear || (year === currentYear && month >= currentMonth)) {
       return;
     }

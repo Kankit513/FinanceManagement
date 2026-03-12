@@ -1,7 +1,5 @@
 const Settings = require('../models/Settings');
 
-// @desc    Get settings (monthly income) for a specific month/year
-// @route   GET /api/settings?month=3&year=2026
 const getSettings = async (req, res) => {
   try {
     const month = parseInt(req.query.month) || (new Date().getMonth() + 1);
@@ -9,7 +7,6 @@ const getSettings = async (req, res) => {
 
     let settings = await Settings.findOne({ month, year });
     if (!settings) {
-      // Return default (not saved yet)
       return res.json({ month, year, monthlyIncome: 0, isSet: false });
     }
     res.json({ ...settings.toObject(), isSet: true });
@@ -18,8 +15,6 @@ const getSettings = async (req, res) => {
   }
 };
 
-// @desc    Update settings (monthly income) for a specific month/year
-// @route   PUT /api/settings
 const updateSettings = async (req, res) => {
   try {
     const { monthlyIncome, month, year } = req.body;
@@ -27,7 +22,6 @@ const updateSettings = async (req, res) => {
     const m = parseInt(month) || (new Date().getMonth() + 1);
     const y = parseInt(year) || new Date().getFullYear();
 
-    // Only allow setting/editing income for the current month
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();

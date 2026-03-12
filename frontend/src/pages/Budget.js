@@ -25,7 +25,6 @@ const Budget = () => {
 
   useEffect(() => {
     fetchBudgets();
-    // eslint-disable-next-line
   }, [selectedMonth, selectedYear]);
 
   const fetchBudgets = async () => {
@@ -47,7 +46,6 @@ const Budget = () => {
   const handleMonthChange = (m, y) => {
     setSelectedMonth(m);
     setSelectedYear(y);
-    // Cancel any ongoing edit when changing months
     setEditId(null);
     setForm({ category: '', limit: '' });
   };
@@ -59,7 +57,6 @@ const Budget = () => {
       return;
     }
 
-    // Check for duplicate category when ADDING (not editing)
     if (!editId) {
       const existingBudget = budgets.find(b => b.category === form.category);
       if (existingBudget) {
@@ -70,7 +67,6 @@ const Budget = () => {
 
     try {
       if (editId) {
-        // Update existing budget
         await API.put(`/budgets/${editId}`, {
           category: form.category,
           limit: parseFloat(form.limit)
@@ -78,7 +74,6 @@ const Budget = () => {
         toast.success(`Budget updated for ${form.category}!`);
         setEditId(null);
       } else {
-        // Create new budget
         await API.post('/budgets', {
           category: form.category,
           limit: parseFloat(form.limit),
@@ -100,7 +95,6 @@ const Budget = () => {
       category: budget.category,
       limit: budget.limit.toString()
     });
-    // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -114,7 +108,6 @@ const Budget = () => {
     try {
       await API.delete(`/budgets/${id}`);
       toast.success('Budget deleted!');
-      // If we were editing this budget, cancel edit
       if (editId === id) {
         setEditId(null);
         setForm({ category: '', limit: '' });
@@ -142,7 +135,6 @@ const Budget = () => {
         />
       </div>
 
-      {/* Set/Edit Budget Form */}
       <div className="form-card">
         <h3>{editId ? '✏️ Edit Budget' : 'Set Monthly Budget'}</h3>
         {editId && (
@@ -193,7 +185,6 @@ const Budget = () => {
         </form>
       </div>
 
-      {/* Summary */}
       <div className="summary-cards">
         <div className="card card-income">
           <h3>Total Budget</h3>
@@ -209,7 +200,6 @@ const Budget = () => {
         </div>
       </div>
 
-      {/* Budget Comparison Table */}
       <div className="table-card">
         <h3>Budget Status</h3>
         {loading ? (

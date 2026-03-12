@@ -9,7 +9,6 @@ const AIInsights = () => {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
-  // State for each AI feature
   const [budgetAlerts, setBudgetAlerts] = useState([]);
   const [patterns, setPatterns] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
@@ -24,14 +23,12 @@ const AIInsights = () => {
   const handleMonthChange = (m, y) => {
     setSelectedMonth(m);
     setSelectedYear(y);
-    // Clear previous results when month changes
     setBudgetAlerts([]);
     setPatterns([]);
     setSuggestions([]);
     setAnswer('');
   };
 
-  // 2️⃣ Smart Budget Alerts
   const fetchBudgetAlerts = async () => {
     try {
       setLoadingAlerts(true);
@@ -45,7 +42,6 @@ const AIInsights = () => {
     }
   };
 
-  // 3️⃣ Spending Pattern Analysis
   const fetchPatterns = async () => {
     try {
       setLoadingPatterns(true);
@@ -59,7 +55,6 @@ const AIInsights = () => {
     }
   };
 
-  // 4️⃣ Saving Suggestions
   const fetchSuggestions = async () => {
     try {
       setLoadingSuggestions(true);
@@ -73,7 +68,6 @@ const AIInsights = () => {
     }
   };
 
-  // 5️⃣ Natural Language Q&A
   const handleAskAI = async (e) => {
     e.preventDefault();
     if (!question.trim()) {
@@ -111,7 +105,6 @@ const AIInsights = () => {
 
       <div className="ai-grid">
 
-        {/* Smart Budget Alerts */}
         <div className="ai-card">
           <div className="ai-card-header">
             <FiAlertTriangle className="ai-card-icon warning" />
@@ -142,7 +135,6 @@ const AIInsights = () => {
           )}
         </div>
 
-        {/* Spending Pattern Analysis */}
         <div className="ai-card">
           <div className="ai-card-header">
             <FiTrendingUp className="ai-card-icon info" />
@@ -170,7 +162,6 @@ const AIInsights = () => {
           )}
         </div>
 
-        {/* Saving Suggestions */}
         <div className="ai-card">
           <div className="ai-card-header">
             <FiDollarSign className="ai-card-icon success" />
@@ -203,7 +194,6 @@ const AIInsights = () => {
           )}
         </div>
 
-        {/* Natural Language Q&A */}
         <div className="ai-card ai-card-full">
           <div className="ai-card-header">
             <FiMessageCircle className="ai-card-icon info" />

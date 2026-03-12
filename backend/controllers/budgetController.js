@@ -1,8 +1,6 @@
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
 
-// @desc    Get all budgets for a month
-// @route   GET /api/budgets
 const getBudgets = async (req, res) => {
   try {
     const { month, year } = req.query;
@@ -20,13 +18,10 @@ const getBudgets = async (req, res) => {
   }
 };
 
-// @desc    Set/update a budget for a category
-// @route   POST /api/budgets
 const setBudget = async (req, res) => {
   try {
     const { category, limit, month, year } = req.body;
 
-    // Upsert: update if exists, create if not
     const budget = await Budget.findOneAndUpdate(
       { category, month, year },
       { category, limit, month, year },
@@ -39,8 +34,6 @@ const setBudget = async (req, res) => {
   }
 };
 
-// @desc    Update a budget
-// @route   PUT /api/budgets/:id
 const updateBudget = async (req, res) => {
   try {
     const budget = await Budget.findById(req.params.id);
@@ -59,8 +52,6 @@ const updateBudget = async (req, res) => {
   }
 };
 
-// @desc    Delete a budget
-// @route   DELETE /api/budgets/:id
 const deleteBudget = async (req, res) => {
   try {
     const budget = await Budget.findById(req.params.id);
@@ -75,18 +66,14 @@ const deleteBudget = async (req, res) => {
   }
 };
 
-// @desc    Get budget vs actual spending comparison
-// @route   GET /api/budgets/comparison
 const getBudgetComparison = async (req, res) => {
   try {
     const { month, year } = req.query;
     const m = parseInt(month) || (new Date().getMonth() + 1);
     const y = parseInt(year) || new Date().getFullYear();
 
-    // Get budgets for the month
     const budgets = await Budget.find({ month: m, year: y });
 
-    // Get actual spending per category for the month
     const startDate = new Date(y, m - 1, 1);
     const endDate = new Date(y, m, 0, 23, 59, 59);
 
@@ -100,7 +87,6 @@ const getBudgetComparison = async (req, res) => {
       }
     ]);
 
-    // Merge budgets with actual spending
     const comparison = budgets.map(budget => {
       const actual = actualSpending.find(a => a._id === budget.category);
       const spent = actual ? actual.spent : 0;
@@ -118,7 +104,6 @@ const getBudgetComparison = async (req, res) => {
       };
     });
 
-    // Include categories with spending but NO budget set
     const budgetedCategories = budgets.map(b => b.category);
     actualSpending.forEach(actual => {
       if (!budgetedCategories.includes(actual._id)) {

@@ -20,7 +20,6 @@ const Expenses = () => {
   const [aiResult, setAiResult] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Receipt Scanner States
   const [scanLoading, setScanLoading] = useState(false);
   const [scanPreview, setScanPreview] = useState(null);
   const [scanResult, setScanResult] = useState(null);
@@ -33,7 +32,6 @@ const Expenses = () => {
 
   useEffect(() => {
     fetchExpenses();
-    // eslint-disable-next-line
   }, [selectedMonth, selectedYear]);
 
   const fetchExpenses = async () => {
@@ -48,7 +46,6 @@ const Expenses = () => {
     }
   };
 
-  // AI Auto-Categorization (with learning + confidence)
   const handleAICategorize = async () => {
     if (!form.description.trim()) {
       toast.warn('Enter a description first');
@@ -78,7 +75,6 @@ const Expenses = () => {
     }
   };
 
-  // ===== Receipt Scanner =====
   const handleReceiptUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -108,8 +104,6 @@ const Expenses = () => {
 
         setScanResult(data);
 
-        // Prepare editable items — always use TODAY's date so it appears in current month's list
-        // Original bill date is saved in the note for reference
         const today = new Date().toISOString().split('T')[0];
         const billDate = data.date || today;
         const editableItems = data.items.map((item, index) => ({
@@ -139,21 +133,18 @@ const Expenses = () => {
     reader.readAsDataURL(file);
   };
 
-  // Update a scanned item field
   const updateScanItem = (id, field, value) => {
     setScanItems(prev =>
       prev.map(item => item.id === id ? { ...item, [field]: value } : item)
     );
   };
 
-  // Toggle check/uncheck a scanned item
   const toggleScanItem = (id) => {
     setScanItems(prev =>
       prev.map(item => item.id === id ? { ...item, checked: !item.checked } : item)
     );
   };
 
-  // Add all checked scanned items as expenses (works for BOTH single and multi-category)
   const handleAddAllScanned = async () => {
     const checkedItems = scanItems.filter(item => item.checked);
 
@@ -162,7 +153,6 @@ const Expenses = () => {
       return;
     }
 
-    // Validate amounts
     const invalidItems = checkedItems.filter(item => !item.amount || parseFloat(item.amount) <= 0);
     if (invalidItems.length > 0) {
       toast.warn(`${invalidItems.length} item(s) have invalid amounts. Please fix them.`);
@@ -198,7 +188,6 @@ const Expenses = () => {
     }
   };
 
-  // Clear all scan data
   const clearScanData = () => {
     setScanPreview(null);
     setScanResult(null);
@@ -270,7 +259,6 @@ const Expenses = () => {
     return 'low';
   };
 
-  // Count checked items for the add button
   const checkedCount = scanItems.filter(i => i.checked).length;
   const checkedTotal = scanItems.filter(i => i.checked).reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0);
 
@@ -284,7 +272,6 @@ const Expenses = () => {
           onChange={(m, y) => {
             setSelectedMonth(m);
             setSelectedYear(y);
-            // Reset form, edit, and scan state when changing months
             setEditId(null);
             setForm({ description: '', amount: '', category: '', date: new Date().toISOString().split('T')[0], note: '' });
             setAiResult(null);
@@ -293,7 +280,6 @@ const Expenses = () => {
         />
       </div>
 
-      {/* ===== Receipt Scanner Section ===== */}
       <div className="form-card">
         <h3>📷 Smart Receipt Scanner</h3>
         <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '12px' }}>
@@ -315,7 +301,6 @@ const Expenses = () => {
           <span className="upload-hint">Supports: JPG, PNG (max 5MB) • Works with multi-category bills</span>
         </div>
 
-        {/* Receipt Preview */}
         {scanPreview && (
           <div className="receipt-preview">
             <img src={scanPreview} alt="Receipt" />
@@ -325,7 +310,6 @@ const Expenses = () => {
           </div>
         )}
 
-        {/* Scanning Loader */}
         {scanLoading && (
           <div className="scan-loading">
             <div className="scan-spinner"></div>
@@ -333,7 +317,6 @@ const Expenses = () => {
           </div>
         )}
 
-        {/* ===== Scan Results (both single & multi category) ===== */}
         {scanResult && scanItems.length > 0 && !scanLoading && (
           <div className="scan-results">
             <div className="scan-results-header">
@@ -428,7 +411,6 @@ const Expenses = () => {
         )}
       </div>
 
-      {/* ===== Add/Edit Expense Form ===== */}
       <div className="form-card">
         <h3>{editId ? 'Edit Expense' : 'Add New Expense'}</h3>
         <form onSubmit={handleSubmit}>
@@ -479,7 +461,6 @@ const Expenses = () => {
                 ))}
               </select>
 
-              {/* AI Confidence Indicator */}
               {aiResult && (
                 <div className={`ai-confidence ${getConfidenceLevel(aiResult.confidence)}`}>
                   <span className="confidence-icon">
@@ -549,7 +530,6 @@ const Expenses = () => {
         </form>
       </div>
 
-      {/* ===== Expenses List ===== */}
       <div className="table-card">
         <div className="table-header">
           <h3>Expenses</h3>

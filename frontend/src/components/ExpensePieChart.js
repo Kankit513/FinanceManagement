@@ -6,9 +6,8 @@ const COLORS = [
   '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6b7280'
 ];
 
-// Custom label — show all slices (even small ones)
 const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
-  if (percent < 0.02) return null; // Only skip extremely tiny slices (< 2%)
+  if (percent < 0.02) return null;
 
   const RADIAN = Math.PI / 180;
   const radius = outerRadius + 28;
@@ -31,7 +30,6 @@ const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent
 };
 
 const ExpensePieChart = ({ data }) => {
-  // data = [{ _id: 'Food', total: 8000 }, ...]
   const chartData = data.map(item => ({
     name: item._id,
     value: item.total

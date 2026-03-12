@@ -1,7 +1,5 @@
 const Expense = require('../models/Expense');
 
-// @desc    Get all expenses
-// @route   GET /api/expenses
 const getExpenses = async (req, res) => {
   try {
     const { month, year, category } = req.query;
@@ -24,8 +22,6 @@ const getExpenses = async (req, res) => {
   }
 };
 
-// @desc    Add a new expense
-// @route   POST /api/expenses
 const addExpense = async (req, res) => {
   try {
     const { description, amount, category, date, note } = req.body;
@@ -44,8 +40,6 @@ const addExpense = async (req, res) => {
   }
 };
 
-// @desc    Update an expense
-// @route   PUT /api/expenses/:id
 const updateExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
@@ -60,8 +54,6 @@ const updateExpense = async (req, res) => {
   }
 };
 
-// @desc    Delete an expense
-// @route   DELETE /api/expenses/:id
 const deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
@@ -76,8 +68,6 @@ const deleteExpense = async (req, res) => {
   }
 };
 
-// @desc    Get expense summary (totals by category)
-// @route   GET /api/expenses/summary
 const getExpenseSummary = async (req, res) => {
   try {
     const { month, year } = req.query;

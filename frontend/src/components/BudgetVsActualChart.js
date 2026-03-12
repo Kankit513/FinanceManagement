@@ -1,7 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
-// Custom legend to show correct colors for Actual bar
 const CustomLegend = () => {
   const items = [
     { name: 'Budget', color: '#6366f1' },
@@ -21,11 +20,10 @@ const CustomLegend = () => {
   );
 };
 
-// Custom tooltip that shows the correct color for each bar
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload || payload.length === 0) return null;
 
-  const entry = payload[0]?.payload; // the data point
+  const entry = payload[0]?.payload;
   const exceeded = entry?.exceeded;
 
   return (
@@ -53,7 +51,6 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const BudgetVsActualChart = ({ data }) => {
-  // data = [{ category: 'Food', budgetLimit: 6000, spent: 8000 }, ...]
   const chartData = data.map(item => ({
     name: item.category,
     Budget: item.budgetLimit,

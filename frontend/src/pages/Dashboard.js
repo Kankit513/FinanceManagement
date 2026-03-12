@@ -23,7 +23,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    // eslint-disable-next-line
   }, [selectedMonth, selectedYear]);
 
   const fetchDashboardData = async () => {
@@ -86,7 +85,6 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Income Input */}
       <div className="income-section">
         <label>Monthly Income for {monthName} {selectedYear} (₹):</label>
         <div className="income-input-group">
@@ -115,7 +113,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="summary-cards">
         <div className="card card-income">
           <h3>Income</h3>
@@ -135,10 +132,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Budget Alerts */}
       <BudgetAlert comparison={comparison} />
 
-      {/* Charts */}
       <div className="charts-grid">
         <ExpensePieChart data={summary.summary} />
         <BudgetVsActualChart data={comparison} />

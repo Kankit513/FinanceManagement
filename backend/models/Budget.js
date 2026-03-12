@@ -12,7 +12,7 @@ const budgetSchema = new mongoose.Schema({
   },
   month: {
     type: Number,
-    required: true  // 1-12
+    required: true
   },
   year: {
     type: Number,
@@ -22,7 +22,6 @@ const budgetSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Compound unique index: one budget per category per month
 budgetSchema.index({ category: 1, month: 1, year: 1 }, { unique: true });
 
 module.exports = mongoose.model('Budget', budgetSchema);

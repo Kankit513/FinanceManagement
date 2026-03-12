@@ -7,7 +7,6 @@ const CategoryMapping = require('../models/CategoryMapping');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-// Helper: Get financial data for AI context
 const getFinancialContext = async (month, year) => {
   const m = parseInt(month);
   const y = parseInt(year);
@@ -16,10 +15,8 @@ const getFinancialContext = async (month, year) => {
 
   const expenses = await Expense.find({ date: { $gte: startDate, $lte: endDate } });
   const budgets = await Budget.find({ month: m, year: y });
-  // Fetch settings for the specific month/year
   const settings = await Settings.findOne({ month: m, year: y });
 
-  // Category-wise totals
   const categoryTotals = {};
   expenses.forEach(exp => {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
@@ -43,7 +40,6 @@ const getFinancialContext = async (month, year) => {
   };
 };
 
-// Helper: Get multi-month data for pattern analysis (starting from the selected month)
 const getMultiMonthData = async (baseMonth, baseYear, months = 3) => {
   const monthsData = [];
 
@@ -76,11 +72,6 @@ const getMultiMonthData = async (baseMonth, baseYear, months = 3) => {
   return monthsData;
 };
 
-// =============================================
-// 1️⃣ Auto Expense Categorization (with Learning + Confidence)
-// =============================================
-
-// Local keyword-based fallback categorization
 const LOCAL_KEYWORDS = {
   Food: ['food', 'pizza', 'burger', 'lunch', 'dinner', 'breakfast', 'restaurant', 'swiggy', 'zomato', 'dominos', 'mcdonalds', 'biryani', 'coffee', 'tea', 'snack', 'meal', 'grocery', 'groceries', 'vegetables', 'fruits', 'milk', 'bread', 'rice', 'chicken', 'fish', 'egg', 'cake', 'ice cream', 'juice', 'water bottle', 'bigbasket', 'blinkit', 'dunzo'],
   Transport: ['uber', 'ola', 'cab', 'taxi', 'bus', 'metro', 'train', 'flight', 'petrol', 'diesel', 'fuel', 'parking', 'toll', 'auto', 'rickshaw', 'rapido', 'bike ride'],
@@ -103,11 +94,9 @@ const fallbackCategorize = (description) => {
       }
     }
   }
-  return null; // No match found
+  return null;
 };
 
-// @desc    AI categorizes expense from description (with learning + confidence)
-// @route   POST /api/ai/categorize
 const categorizeExpense = async (req, res) => {
   try {
     const { description } = req.body;
@@ -119,9 +108,6 @@ const categorizeExpense = async (req, res) => {
     const normalizedDesc = description.toLowerCase().trim();
     const validCategories = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Rent', 'Utilities', 'Household', 'Health', 'Education', 'Travel', 'Other'];
 
-    // ========================
-    // STEP A: Check learned mappings first (from database)
-    // ========================
     const existingMapping = await CategoryMapping.findOne({ keyword: normalizedDesc });
 
     if (existingMapping) {
@@ -138,9 +124,6 @@ const categorizeExpense = async (req, res) => {
       });
     }
 
-    // ========================
-    // STEP B: Try Gemini API with confidence score
-    // ========================
     try {
       const prompt = `You are a financial expense categorizer. Given the expense description, categorize it into EXACTLY ONE of these categories:
 Food, Transport, Shopping, Entertainment, Rent, Utilities, Household, Health, Education, Travel, Other
@@ -160,7 +143,6 @@ Expense description: "${description}"`;
       const matchedCategory = validCategories.find(c => c.toLowerCase() === parsed.category.toLowerCase()) || 'Other';
       const confidence = Math.min(Math.max(parseInt(parsed.confidence) || 50, 0), 100);
 
-      // Save to learned mappings (only if confidence > 70)
       if (confidence > 70) {
         await CategoryMapping.findOneAndUpdate(
           { keyword: normalizedDesc },
@@ -178,15 +160,11 @@ Expense description: "${description}"`;
         message: `AI categorized with ${confidence}% confidence`
       });
     } catch (aiError) {
-      // ========================
-      // STEP C: Gemini failed — use local keyword fallback
-      // ========================
       console.error('Gemini API Error, using fallback:', aiError.message);
 
       const fallbackCategory = fallbackCategorize(description);
 
       if (fallbackCategory) {
-        // Save fallback result to learned mappings
         await CategoryMapping.findOneAndUpdate(
           { keyword: normalizedDesc },
           { keyword: normalizedDesc, category: fallbackCategory, usageCount: 1 },
@@ -203,7 +181,6 @@ Expense description: "${description}"`;
         });
       }
 
-      // Nothing matched — return Other
       return res.json({
         category: 'Other',
         description,
@@ -219,11 +196,6 @@ Expense description: "${description}"`;
   }
 };
 
-// =============================================
-// 2️⃣ Smart Budget Alerts
-// =============================================
-// @desc    AI analyzes spending pace and predicts budget overruns
-// @route   GET /api/ai/budget-alerts
 const smartBudgetAlerts = async (req, res) => {
   try {
     const { month, year } = req.query;
@@ -250,7 +222,6 @@ const smartBudgetAlerts = async (req, res) => {
       return `${b.category}: Budget ₹${b.limit}, Spent ₹${spent}, ${((spent / b.limit) * 100).toFixed(0)}% used`;
     }).join('\n');
 
-    // Also include unbudgeted categories with spending
     const budgetedCategories = data.budgets.map(b => b.category);
     const unbudgetedInfo = Object.entries(data.categoryTotals)
       .filter(([cat]) => !budgetedCategories.includes(cat))
@@ -284,7 +255,6 @@ Respond ONLY with the JSON array, no extra text.`;
     const result = await model.generateContent(prompt);
     let responseText = result.response.text().trim();
 
-    // Clean markdown code blocks if present
     responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     const alerts = JSON.parse(responseText);
@@ -295,11 +265,6 @@ Respond ONLY with the JSON array, no extra text.`;
   }
 };
 
-// =============================================
-// 3️⃣ Spending Pattern Analysis
-// =============================================
-// @desc    AI analyzes multi-month spending patterns
-// @route   GET /api/ai/patterns
 const spendingPatterns = async (req, res) => {
   try {
     const { month, year } = req.query;
@@ -307,7 +272,6 @@ const spendingPatterns = async (req, res) => {
     const y = parseInt(year) || new Date().getFullYear();
 
     const monthsData = await getMultiMonthData(m, y, 3);
-    // Fetch settings for the selected month
     const settings = await Settings.findOne({ month: m, year: y });
     const monthlyIncome = settings ? settings.monthlyIncome : 0;
 
@@ -344,11 +308,6 @@ Respond ONLY with the JSON array, no extra text.`;
   }
 };
 
-// =============================================
-// 4️⃣ Saving Suggestions
-// =============================================
-// @desc    AI suggests ways to save more money
-// @route   GET /api/ai/suggestions
 const savingSuggestions = async (req, res) => {
   try {
     const { month, year } = req.query;
@@ -390,11 +349,6 @@ Respond ONLY with the JSON array, no extra text.`;
   }
 };
 
-// =============================================
-// 5️⃣ Natural Language Financial Q&A
-// =============================================
-// @desc    User asks a question, AI answers based on financial data
-// @route   POST /api/ai/ask
 const askAI = async (req, res) => {
   try {
     const { question } = req.body;
@@ -456,20 +410,14 @@ Answer:`;
   }
 };
 
-// =============================================
-// 6️⃣ Smart Receipt Scanner (Multi-Category Support)
-// =============================================
-// @desc    Extract expense data from receipt image, split by category if needed
-// @route   POST /api/ai/scan-receipt
 const scanReceipt = async (req, res) => {
   try {
-    const { image } = req.body; // base64 encoded image
+    const { image } = req.body;
 
     if (!image) {
       return res.status(400).json({ message: 'Receipt image is required' });
     }
 
-    // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
 
     const prompt = `You are a smart receipt/bill scanner AI. Analyze this receipt image and extract expense information.
@@ -517,7 +465,6 @@ Rules:
 - If you can't read something clearly, make your best guess
 - Respond ONLY with JSON, no extra text.`;
 
-    // Send image to Gemini Vision
     const result = await model.generateContent([
       prompt,
       {
@@ -534,7 +481,6 @@ Rules:
     const parsed = JSON.parse(responseText);
     console.log('Gemini Receipt Response:', JSON.stringify(parsed, null, 2));
 
-    // Helper: clean amount — strip currency symbols, commas, spaces
     const cleanAmount = (val) => {
       if (typeof val === 'number') return val;
       if (typeof val === 'string') {
@@ -544,7 +490,6 @@ Rules:
       return 0;
     };
 
-    // Validate categories for each item
     const validCategories = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Rent',
                              'Utilities', 'Household', 'Health', 'Education', 'Travel', 'Other'];
 
@@ -555,7 +500,6 @@ Rules:
       itemDetails: item.itemDetails || ''
     }));
 
-    // If no items were parsed, create a single fallback entry
     if (validatedItems.length === 0) {
       validatedItems.push({
         description: `Purchase from ${parsed.store || 'Unknown Store'}`,
